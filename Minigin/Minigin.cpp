@@ -21,7 +21,7 @@ using namespace std::chrono;
 
 SDL_Window* g_window{};
 
-void LogSDLVersion(const std::string& message, int major, int minor, int patch)
+static void LogSDLVersion(const std::string& message, int major, int minor, int patch)
 {
 #if WIN32
 	std::stringstream ss;
@@ -34,13 +34,13 @@ void LogSDLVersion(const std::string& message, int major, int minor, int patch)
 
 #ifdef __EMSCRIPTEN__
 #include "emscripten.h"
-void LoopCallback(void* arg)
+static void LoopCallback(void* arg)
 {
 	static_cast<dae::Minigin*>(arg)->RunOneFrame();
 }
 #endif
 
-void PrintSDLVersion()
+static void PrintSDLVersion()
 {
 	LogSDLVersion("Compiled with SDL", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
 	int version = SDL_GetVersion();
@@ -87,9 +87,6 @@ void dae::Minigin::Run(const std::function<void()>& load)
 {
 	load();
 
-	// Target ~60 FPS
-	//constexpr int msPerFrame{ 16 };
-
 	m_lastTime = high_resolution_clock::now();
 	m_lag = 0.f;
 
@@ -103,37 +100,29 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
-	constexpr int msPerFrame{ 16 }; // ~60 FPS cap
+	constexpr int msPerFrame{ 16 }; 
 	constexpr float fixedTimeStep{ dae::Time::FixedTimeStep };
 
-	// --- Delta time ---
 	const auto currentTime = high_resolution_clock::now();
 	const float deltaTime = duration<float>(currentTime - m_lastTime).count();
 	m_lastTime = currentTime;
 
-	// Store delta time in singleton so game objects can access it
 	Time::GetInstance().SetDeltaTime(deltaTime);
 
-	// Accumulate lag for fixed update
 	m_lag += deltaTime;
 
-	// --- Process input ---
 	m_quit = !InputManager::GetInstance().ProcessInput();
 
-	// --- Fixed update loop (physics, networking) ---
 	while (m_lag >= fixedTimeStep)
 	{
 		SceneManager::GetInstance().Update();
 		m_lag -= fixedTimeStep;
 	}
 
-	// --- Regular update (game logic, AI, etc.) ---
 	SceneManager::GetInstance().Update();
 
-	// --- Render ---
 	Renderer::GetInstance().Render();
 
-	// --- Frame cap: sleep remaining time ---
 	const auto sleepTime = currentTime + milliseconds(msPerFrame) - high_resolution_clock::now();
 	std::this_thread::sleep_for(sleepTime);
 }

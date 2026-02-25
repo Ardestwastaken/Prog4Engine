@@ -1,37 +1,41 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "GameObject.h"
+#include <SDL3/SDL.h> 
 #include "Component.h"
-#include "Transform.h"
 
 namespace dae
 {
 	class Font;
 	class Texture2D;
+	class GameObject;
+
 	class TextObject final : public Component
 	{
 	public:
-		void Update() override;
+		TextObject(GameObject* gameObject,
+			const std::string& text,
+			std::shared_ptr<Font> font,
+			const SDL_Color& color = { 255, 255, 255, 255 });
+
+		~TextObject() override = default;
+
+		TextObject(const TextObject&) = delete;
+		TextObject(TextObject&&) = delete;
+		TextObject& operator=(const TextObject&) = delete;
+		TextObject& operator=(TextObject&&) = delete;
+
+		void Update()       override;
 		void Render() const override;
 
 		void SetText(const std::string& text);
-		void SetPosition(float x, float y);
 		void SetColor(const SDL_Color& color);
 
-		TextObject(GameObject* gameObject, const std::string& text, std::shared_ptr<Font> font, const SDL_Color& color = { 255, 255, 255, 255 });
-		virtual ~TextObject() = default;
-		TextObject(const TextObject& other) = delete;
-		TextObject(TextObject&& other) = delete;
-		TextObject& operator=(const TextObject& other) = delete;
-		TextObject& operator=(TextObject&& other) = delete;
-
 	private:
-		bool m_needsUpdate{};
-		std::string m_text{};
-		SDL_Color m_color{ 255, 255, 255, 255 };
-		Transform m_transform{};
-		std::shared_ptr<Font> m_font{};
+		bool                       m_needsUpdate{ true };
+		std::string                m_text{};
+		SDL_Color                  m_color{ 255, 255, 255, 255 };
+		std::shared_ptr<Font>      m_font{};
 		std::shared_ptr<Texture2D> m_textTexture{};
 	};
 }

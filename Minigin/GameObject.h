@@ -1,53 +1,59 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "Transform.h"
+#include <vector>
+#include <glm/vec3.hpp>
 #include "Component.h"
 
 namespace dae
 {
 	class Texture2D;
+
 	class GameObject final
 	{
-		Transform m_transform{};
-		std::shared_ptr<Texture2D> m_texture{};
 	public:
-		virtual void Update();
-		virtual void Render() const;
-
-		void SetTexture(const std::string& filename);
-		void SetPosition(float x, float y);
-		Transform* GetTransfrom() { return &m_transform; }
-
 		GameObject() = default;
-		virtual ~GameObject();
-		GameObject(const GameObject& other) = delete;
-		GameObject(GameObject&& other) = delete;
-		GameObject& operator=(const GameObject& other) = delete;
-		GameObject& operator=(GameObject&& other) = delete;
+		~GameObject();
 
+		GameObject(const GameObject&) = delete;
+		GameObject(GameObject&&) = delete;
+		GameObject& operator=(const GameObject&) = delete;
+		GameObject& operator=(GameObject&&) = delete;
+
+		void Update();
+		void Render() const;
+
+		void SetParent(GameObject* parent, bool keepWorldPosition = true);
+
+		GameObject* GetParent()   const { return m_parent; }
+		const std::vector<GameObject*>& GetChildren() const { return m_childrenView; }
+
+		void SetLocalPosition(float x, float y, float z = 0.f);
+		void SetLocalPosition(const glm::vec3& pos);
+
+		const glm::vec3& GetLocalPosition()  const { return m_localPosition; }
+		const glm::vec3& GetWorldPosition(); 
 
 		template<typename T, typename... Args>
 		T* AddComponent(Args&&... args)
 		{
-			static_assert(std::is_base_of<Component, T>::value, "T does not inherit from Component");
+			static_assert(std::is_base_of<Component, T>::value,
+				"T must inherit from Component");
 
-			auto pComponent{ std::make_unique<T>(this, std::forward<Args>(args)...) };
-
+			auto pComponent = std::make_unique<T>(this, std::forward<Args>(args)...);
 			T* ptr = pComponent.get();
 			m_pComponents.push_back(std::move(pComponent));
-
 			return ptr;
 		}
 
 		template<typename T>
 		void RemoveComponent()
 		{
-			for (auto i = m_pComponents.begin(); i < m_pComponents.end(); i++)
+			for (auto it = m_pComponents.begin(); it != m_pComponents.end(); ++it)
 			{
-				if (dynamic_cast<T*>(i->get()))
+				if (dynamic_cast<T*>(it->get()))
 				{
-					m_pComponents.erase(i);
+					m_pComponents.erase(it);
 					return;
 				}
 			}
@@ -58,24 +64,32 @@ namespace dae
 		{
 			for (const auto& pComp : m_pComponents)
 			{
-				if (pComp)
-				{
-					if (auto component = dynamic_cast<T*>(pComp.get()))
-					{
-						return component;
-					}
-				}
+				if (auto* c = dynamic_cast<T*>(pComp.get()))
+					return c;
 			}
 			return nullptr;
 		}
 
 		template<typename T>
-		bool HasComponent() const
-		{
-			return GetComponent<T>() != nullptr;
-		}
+		bool HasComponent() const { return GetComponent<T>() != nullptr; }
 
 	private:
+		GameObject* m_parent{ nullptr };
+
+		std::vector<std::unique_ptr<GameObject>> m_children{};
+		std::vector<GameObject*> m_childrenView{};
+
+		void AddChild(GameObject* child);
+		void RemoveChild(GameObject* child);
+		bool IsChild(const GameObject* potentialChild) const;
+
+		glm::vec3 m_localPosition{ 0, 0, 0 };
+		glm::vec3 m_worldPosition{ 0, 0, 0 }; 
+		bool m_positionIsDirty{ true };  
+
+		void SetPositionDirty();
+		void UpdateWorldPosition();
+
 		std::vector<std::unique_ptr<Component>> m_pComponents{};
 	};
 }
