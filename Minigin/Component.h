@@ -16,6 +16,7 @@ namespace dae
 
 		virtual void Update() {}
 		virtual void Render() const {}
+		virtual void RenderGui() const {}
 
 	protected:
 		

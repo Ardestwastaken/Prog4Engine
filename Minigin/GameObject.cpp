@@ -16,7 +16,10 @@ namespace dae
 	void GameObject::Render() const
 	{
 		for (auto& pComp : m_pComponents)
+		{
 			pComp->Render();
+			pComp->RenderGui();
+		}
 	}
 
 	void GameObject::SetParent(GameObject* newParent, bool keepWorldPosition)
