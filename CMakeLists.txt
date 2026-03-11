@@ -13,6 +13,13 @@ else()
   set(TARGET_PARAM WIN32)
 endif()
 
+# check de correcte controller build
+if(EMSCRIPTEN)
+    set(CONTROLLER_SRC Minigin/Controller_SDL.cpp)
+else()
+    set(CONTROLLER_SRC Minigin/Controller.cpp)
+endif()
+
 # list source files here
 add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/Font.cpp
@@ -27,7 +34,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/TextObject.cpp
   Minigin/Texture2D.cpp
   Minigin/Transform.cpp
- "Minigin/TextureComponent.cpp" "Minigin/FpsComponent.cpp" "Minigin/RotatorComponent.cpp" "Minigin/CacheTheTrash.cpp" "Minigin/Controller.cpp" "Minigin/Inputmanager.cpp")
+ "Minigin/TextureComponent.cpp" "Minigin/FpsComponent.cpp" "Minigin/RotatorComponent.cpp" "Minigin/CacheTheTrash.cpp" "Minigin/Controller.cpp" "Minigin/Inputmanager.cpp" ${CONTROLLER_SRC})
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
