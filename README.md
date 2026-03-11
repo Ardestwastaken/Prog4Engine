@@ -1,88 +1,134 @@
-﻿# Minigin
+﻿# Prog4Engine
 
-Minigin is a very small project using [SDL3](https://www.libsdl.org/) and [glm](https://github.com/g-truc/glm) for 2D c++ game projects. It is in no way a game engine, only a barebone start project where everything sdl related has been set up. It contains glm for vector math, to aleviate the need to write custom vector and matrix classes.
+A custom 2D game engine built on top of [SDL3](https://www.libsdl.org/) and [glm](https://github.com/g-truc/glm), developed as an assignment for the **Programming 4** course at [DAE (Digital Arts & Entertainment)](https://www.digitalartsandentertainment.be/) at Howest.
 
 [![Build Status](https://github.com/avadae/minigin/actions/workflows/cmake.yml/badge.svg)](https://github.com/avadae/cmake/actions)
 [![Build Status](https://github.com/avadae/minigin/actions/workflows/emscripten.yml/badge.svg)](https://github.com/avadae/emscripten/actions)
 [![GitHub Release](https://img.shields.io/github/v/release/avadae/minigin?logo=github&sort=semver)](https://github.com/avadae/minigin/releases/latest)
 
-# Goal
+---
 
-Minigin can/may be used as a start project for the exam assignment in the course [Programming 4](https://youtu.be/j96Oh6vzhmg) at DAE. In that assignment students need to recreate a popular 80's arcade game with a game engine they need to program themselves. During the course we discuss several game programming patterns, using the book '[Game Programming Patterns](https://gameprogrammingpatterns.com/)' by [Robert Nystrom](https://github.com/munificent) as reading material. 
+## About the Project
 
-# Disclaimer
+This project is a game engine built from the ground up (on top of a bare-bones SDL3 scaffold called **Minigin**) over the course of a semester. The goal is to implement various game programming patterns discussed in class — using [Game Programming Patterns](https://gameprogrammingpatterns.com/) by Robert Nystrom as reading material — and end up with an engine capable of running a fully playable game.
 
-Minigin is, despite perhaps the suggestion in its name, **not** a game engine. It is just a very simple SDL3 ready project with some of the scaffolding in place to get started. None of the patterns discussed in the course are used yet (except singleton which use we challenge during the course). It is up to the students to implement their own vision for their engine, apply patterns as they see fit, create their game as efficient as possible.
+The game I was assigned to recreate is **Q\*bert** (1982).
 
-# Use
+---
 
-Get the source from this project, or since students need to have their work on github too, they can use this repository as a template. Hit the "Use this template" button on the top right corner of the github page of this project.
+## About Q\*bert
 
-## Windows version
+Q\*bert is a classic isometric arcade game originally developed by Gottlieb and released in arcades in 1982. The player controls Q\*bert, an orange creature with a large nose, who hops around on a pyramid of cubes viewed from an isometric perspective.
 
-Either
-- Open the root folder in Visual Studio 2026; this will be recognized as a cmake project.
-  
-Or
-- Install CMake 
-- Install CMake and CMake Tools extensions in Visual Code
-- Open the root folder in Visual Code,  this will be recognized as a cmake project.
+### How it plays
 
-Or
-- Use whatever editor you like :)
+- The pyramid consists of 28 cubes arranged in a triangular grid, with 7 cubes on the bottom row tapering up to 1 at the top.
+- Q\*bert starts at the top of the pyramid and must hop down, landing on each cube to change its color. Once every cube has been changed to the target color, the level is complete.
+- On later levels, cubes may need to be jumped on multiple times to reach the target color, adding complexity.
+- Several enemies roam the pyramid and will kill Q\*bert on contact, including:
+  - **Coily** — a snake that hatches from a ball and actively chases Q\*bert.
+  - **Ugg and Wrong-Way** — creatures that travel along the sides of the cubes.
+  - **Slick and Sam** — enemies that revert cube colors back, undoing your progress.
+- Colored discs float on either side of the pyramid. If Q\*bert jumps off the edge onto one of these discs, he rides it back to the top — and if Coily is in pursuit, Coily will fall off the edge trying to follow.
+- The game features a scoring system rewarding cube completions, catching enemies with discs, and completing levels quickly.
 
-## Emscripten (web) version
+Q\*bert was notable for its use of synthesized speech and gibberish exclamations (represented as "@!#?@!" in a speech bubble) whenever Q\*bert falls off the pyramid — a design that became iconic.
 
-### On windows
+---
 
-For installing all of the needed tools on Windows I recommend using [Chocolatey](https://chocolatey.org/). You can then run the following in a terminal to install what is needed:
+## Engine Features
 
-    choco install -y cmake
-    choco install -y emscripten
-    choco install -y ninja
-    choco install -y python
+Built on top of the [Minigin](https://github.com/avadae/minigin) start project, this engine *currently* implements the following systems:
 
-In a terminal, navigate to the root folder. Run this: 
+- **Game Loop** — fixed timestep update with delta-time rendering
+- **Scene Management** — scenes with GameObjects and Components
+- **Component System** — attach/detach components to GameObjects, parent-child transforms
+- **Input System** — keyboard and Xbox controller support (up to 4 controllers) via the **Command pattern**
+  - XInput on Windows, SDL Gamepad API for Emscripten/web builds (Pimpl pattern used to hide platform details)
+- **Resource Management** — texture and font loading
+- **Rendering** — SDL3-based 2D renderer with texture and text support
+- **ImGui integration** — for in-engine debugging and tooling
 
-    mkdir build_web
-    cd build_web
-    emcmake cmake ..
-    emmake ninja
+More systems will be added throughout the semester as the course progresses.
 
-To be able to see the webpage you can start a python webserver in the build_web folder
+---
 
-    python -m http.server
+## Building the Project
 
-Then browse to http://localhost:8000 and you're good to go.
+### Windows
 
-### On OSX
+Either open the root folder in **Visual Studio 2022+** (recognized as a CMake project automatically), or:
 
-On Mac you can use homebrew
+```
+cmake -B build
+cmake --build build
+```
 
-    brew install cmake
-    brew install emscripten
-    brew install python
+### Emscripten (Web)
 
-In a terminal on OSX, navigate to the root folder. Run this: 
+#### Windows (using [Chocolatey](https://chocolatey.org/))
 
-    mkdir build_web
-    cd build_web
-    emcmake cmake .. -DCMAKE_OSX_ARCHITECTURES=""
-    emmake make
+```
+choco install -y cmake emscripten ninja python
+```
 
-To be able to see the webpage you can start a python webserver in the build_web folder
+Then in the root folder:
 
-    python3 -m http.server
+```
+mkdir build_web
+cd build_web
+emcmake cmake ..
+emmake ninja
+```
 
-Then browse to http://localhost:8000 and you're good to go.
+Start a local server to view it:
 
-## Github Actions
+```
+python -m http.server
+```
 
-This project is build with github actions.
-- The CMake workflow builds the project in Debug and Release for Windows and serves as a check that the project builds on that platform.
-- The Emscripten workflow generates a web version of the project and publishes it as a [github page](https://avadae.github.io/minigin/). 
-  - The url of that page will be `https://<username>.github.io/<repository>/`
-- You can embed this page with 
+Then browse to http://localhost:8000.
 
-```<iframe style="position: absolute; top: 0px; left: 0px; width: 1024px; height: 576px;" src="https://<username>.github.io/<repository>/" loading="lazy"></iframe>```
+#### macOS (using [Homebrew](https://brew.sh/))
 
+```
+brew install cmake emscripten python
+```
+
+```
+mkdir build_web
+cd build_web
+emcmake cmake .. -DCMAKE_OSX_ARCHITECTURES=""
+emmake make
+```
+
+```
+python3 -m http.server
+```
+
+Then browse to http://localhost:8000.
+
+---
+
+## GitHub Actions
+
+This project uses two GitHub Actions workflows:
+
+- **CMake workflow** — builds the project in Debug and Release for Windows.
+- **Emscripten workflow** — builds the web version and publishes it as a GitHub Page at:
+  `https://<username>.github.io/<repository>/`
+
+You can embed the web build in any webpage with:
+
+```html
+<iframe style="position: absolute; top: 0px; left: 0px; width: 1024px; height: 576px;"
+  src="https://<username>.github.io/<repository>/" loading="lazy"></iframe>
+```
+
+---
+
+## Course
+
+**Programming 4** — [DAE, Howest University of Applied Sciences](https://www.digitalartsandentertainment.be/)
+
+Taught using *Game Programming Patterns* by Robert Nystrom — available free online at [gameprogrammingpatterns.com](https://gameprogrammingpatterns.com/).
