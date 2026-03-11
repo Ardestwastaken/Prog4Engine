@@ -15,7 +15,7 @@ endif()
 
 # check de correcte controller build
 if(EMSCRIPTEN)
-    set(CONTROLLER_SRC Minigin/Controller_SDL.cpp)
+    set(CONTROLLER_SRC Minigin/ControllerSDL.cpp)
 else()
     set(CONTROLLER_SRC Minigin/Controller.cpp)
 endif()
