@@ -24,7 +24,7 @@ endif()
 add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/Font.cpp
   Minigin/GameObject.cpp
-  Minigin/Inputmanager.cpp
+  Minigin/InputManager.cpp
   Minigin/Main.cpp
   Minigin/Minigin.cpp
   Minigin/Renderer.cpp
