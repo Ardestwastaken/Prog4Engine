@@ -1,4 +1,4 @@
-﻿#include <SDL3/SDL.h>
+#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
 #if _DEBUG && __has_include(<vld.h>)
@@ -12,7 +12,8 @@
 #include "TextureComponent.h"
 #include "TextObject.h"
 #include "FpsComponent.h"
-#include "RotatorComponent.h"
+#include "InputManager.h"
+#include "Command.h"
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -34,7 +35,7 @@ static void load()
 
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 
-	// Title text
+	// Title
 	auto titleObj = std::make_unique<dae::GameObject>();
 	titleObj->SetLocalPosition(292.f, 20.f);
 	titleObj->AddComponent<dae::TextObject>("Programming 4 Assignment", font)
@@ -47,24 +48,48 @@ static void load()
 	fpsObj->AddComponent<dae::FpsComponent>();
 	scene.Add(std::move(fpsObj));
 
-	// First character
-	auto qbert1 = std::make_unique<dae::GameObject>();
-	auto* tex1 = qbert1->AddComponent<dae::TextureComponent>();
+	// Character 1 with keyboard
+	auto char1 = std::make_unique<dae::GameObject>();
+	char1->SetLocalPosition(200.f, 300.f);
+	auto* tex1 = char1->AddComponent<dae::TextureComponent>();
 	tex1->SetTexture("qbrt.png");
 	tex1->SetScale(0.05f);
-	qbert1->AddComponent<dae::RotatorComponent>(glm::vec2{ 512, 288 }, 100.f, 1.f);
+	dae::GameObject* pChar1 = char1.get();
+	scene.Add(std::move(char1));
 
-	dae::GameObject* pQbert1 = qbert1.get();
-	scene.Add(std::move(qbert1));
-
-	// Second character
-	auto qbert2 = std::make_unique<dae::GameObject>();
-	auto* tex2 = qbert2->AddComponent<dae::TextureComponent>();
+	// Character 2 with controller
+	auto char2 = std::make_unique<dae::GameObject>();
+	char2->SetLocalPosition(400.f, 300.f);
+	auto* tex2 = char2->AddComponent<dae::TextureComponent>();
 	tex2->SetTexture("qbrt.png");
 	tex2->SetScale(0.05f);
-	qbert2->AddComponent<dae::RotatorComponent>(glm::vec2{ 0, 0 }, 60.f, -2.f);
-	qbert2->SetParent(pQbert1, false);
-	scene.Add(std::move(qbert2));
+	dae::GameObject* pChar2 = char2.get();
+	scene.Add(std::move(char2));
+
+	constexpr float speed1 = 100.f;
+	constexpr float speed2 = speed1 * 2.f;
+
+	auto& input = dae::InputManager::GetInstance();
+
+	// WASD KEYBOARD COMMANDS
+	input.BindKeyboardCommand(SDL_SCANCODE_W, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar1, glm::vec3{ 0, -1, 0 }, speed1));
+	input.BindKeyboardCommand(SDL_SCANCODE_S, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar1, glm::vec3{ 0,  1, 0 }, speed1));
+	input.BindKeyboardCommand(SDL_SCANCODE_A, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar1, glm::vec3{ -1,  0, 0 }, speed1));
+	input.BindKeyboardCommand(SDL_SCANCODE_D, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar1, glm::vec3{ 1,  0, 0 }, speed1));
+
+	//DPAD CONTROLLER COMMANDS
+	input.BindControllerCommand(0, dae::Controller::Button::DPadUp, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 0, -1, 0 }, speed2));
+	input.BindControllerCommand(0, dae::Controller::Button::DPadDown, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 0,  1, 0 }, speed2));
+	input.BindControllerCommand(0, dae::Controller::Button::DPadLeft, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ -1,  0, 0 }, speed2));
+	input.BindControllerCommand(0, dae::Controller::Button::DPadRight, dae::KeyState::Pressed,
+		std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 1,  0, 0 }, speed2));
 }
 
 int main(int, char* []) {

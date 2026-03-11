@@ -55,11 +55,11 @@ void dae::Renderer::Render() const
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 
-	RenderExerciseOneWindow();
-	RenderExerciseTwoWindow();
+	//RenderExerciseOneWindow();
+	//RenderExerciseTwoWindow();
 
 	//NOT KEEPING THIS IN THE ENGINE
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowDemoWindow();
 	
 	ImGui::Render();
 

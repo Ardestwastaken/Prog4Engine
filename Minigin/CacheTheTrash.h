@@ -32,7 +32,7 @@ namespace dae {
 	static std::vector<float> g_PlotData;
 	static int g_NrSamples = 10;
 
-	static void RenderExerciseOneWindow()
+	void RenderExerciseOneWindow()
 	{
 		ImGui::Begin("exercise one");
 
@@ -92,7 +92,7 @@ namespace dae {
 	static std::vector<float> g_PlotDataEx2Alt;
 	static int g_NrSamplesEx2 = 10;
 
-	static void RenderExerciseTwoWindow()
+	void RenderExerciseTwoWindow()
 	{
 		ImGui::Begin("exercise two");
 
