@@ -20,6 +20,8 @@ The game I was assigned to recreate is **Q\*bert** (1982).
 
 Q\*bert is a classic isometric arcade game originally developed by Gottlieb and released in arcades in 1982. The player controls Q\*bert, an orange creature with a large nose, who hops around on a pyramid of cubes viewed from an isometric perspective.
 
+![Q*bert arcade game](https://upload.wikimedia.org/wikipedia/en/5/5e/Qbert.png)
+
 ### How it plays
 
 - The pyramid consists of 28 cubes arranged in a triangular grid, with 7 cubes on the bottom row tapering up to 1 at the top.
