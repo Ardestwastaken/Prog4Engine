@@ -14,7 +14,6 @@ namespace dae
 		explicit PlayerComponent(GameObject* go, int maxLives = 3)
 			: Component(go)
 			, m_lives(maxLives)
-			, m_maxLives(maxLives)
 		{
 		}
 
@@ -42,7 +41,6 @@ namespace dae
 
 	private:
 		int m_lives{};
-		int m_maxLives{};
 		int m_score{};
 	};
 }
