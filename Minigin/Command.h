@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "Timer.h"
 #include <glm/vec3.hpp>
+#include "PlayerComponent.h"
 
 namespace dae
 {
@@ -50,5 +51,34 @@ namespace dae
 	private:
 		glm::vec3 m_Direction{};
 		float m_Speed{};
+	};
+
+	class DieCommand final : public GameActorCommand
+	{
+	public:
+		explicit DieCommand(GameObject* go) : GameActorCommand(go) {}
+
+		void Execute() override
+		{
+			auto* player = GetGameObject()->GetComponent<PlayerComponent>();
+			if (player) player->Die();
+		}
+	};
+
+	class GainPointsCommand final : public GameActorCommand
+	{
+	public:
+		GainPointsCommand(GameObject* go, int points)
+			: GameActorCommand(go), m_points(points) {
+		}
+
+		void Execute() override
+		{
+			auto* player = GetGameObject()->GetComponent<PlayerComponent>();
+			if (player) player->AddScore(m_points);
+		}
+
+	private:
+		int m_points{};
 	};
 }

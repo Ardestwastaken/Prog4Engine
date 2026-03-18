@@ -6,7 +6,6 @@
 #include <windows.h>
 #endif
 #include <SDL3/SDL.h>
-//#include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include "Minigin.h"
 #include "InputManager.h"
@@ -16,6 +15,13 @@
 #include <chrono>
 #include <thread>
 #include "Timer.h"
+
+#ifdef USE_STEAMWORKS
+#pragma warning(push)
+#pragma warning(disable:4996)
+#include <steam_api.h>
+#pragma warning(pop)
+#endif
 
 using namespace std::chrono;
 
@@ -100,7 +106,7 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
-	constexpr int msPerFrame{ 16 }; 
+	constexpr int msPerFrame{ 16 };
 	constexpr float fixedTimeStep{ dae::Time::FixedTimeStep };
 
 	const auto currentTime = high_resolution_clock::now();
@@ -122,6 +128,10 @@ void dae::Minigin::RunOneFrame()
 	SceneManager::GetInstance().Update();
 
 	Renderer::GetInstance().Render();
+
+#ifdef USE_STEAMWORKS
+	SteamAPI_RunCallbacks();
+#endif
 
 	const auto sleepTime = currentTime + milliseconds(msPerFrame) - high_resolution_clock::now();
 	std::this_thread::sleep_for(sleepTime);
