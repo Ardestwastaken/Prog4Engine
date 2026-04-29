@@ -28,8 +28,21 @@
 #include "PlayerStatsComponents.h"
 #include "SteamAchievments.h"
 
+// Sound system
+#include "ServiceLocator.h"
+#include "SDLSoundSystem.h"
+#include "SoundSystem.h"
+
 #include <filesystem>
 namespace fs = std::filesystem;
+
+// Sound IDs used in the game
+enum SoundIds : dae::sound_id
+{
+	SND_MOVE   = 0,
+	SND_DIE    = 1,
+	SND_POINTS = 2,
+};
 
 static dae::GameObject* MakeLabel(dae::Scene& scene,
 	const std::string& text,
@@ -62,13 +75,20 @@ static void load()
 	fpsObj->AddComponent<dae::FpsComponent>();
 	scene.Add(std::move(fpsObj));
 
-	//CONTROLS INFO
+	// Controls info (updated to mention sound keys)
 	auto ctrl = std::make_unique<dae::GameObject>();
-	ctrl->SetLocalPosition(10.f, 230.f);
+	ctrl->SetLocalPosition(10.f, 200.f);
 	ctrl->AddComponent<dae::TextObject>(
-		"P1: WASD=Move  X=Die  Z=+100pts  ||  P2: DPad=Move  A=Die  B=+100pts",
+		"P1: WASD=Move  X=Die(snd)  Z=+100pts(snd)  ||  P2: DPad=Move  A=Die(snd)  B=+100pts(snd)",
 		font);
 	scene.Add(std::move(ctrl));
+
+	auto ctrl2 = std::make_unique<dae::GameObject>();
+	ctrl2->SetLocalPosition(10.f, 220.f);
+	ctrl2->AddComponent<dae::TextObject>(
+		"Press [M] to play a sound directly via ServiceLocator",
+		font);
+	scene.Add(std::move(ctrl2));
 
 	//make player 1
 	auto char1 = std::make_unique<dae::GameObject>();
@@ -76,7 +96,7 @@ static void load()
 	{
 		auto* tex = char1->AddComponent<dae::TextureComponent>();
 		tex->SetTexture("qbrt.png");
-		tex->SetScale(0.05f);  // fix: texture was full size without this
+		tex->SetScale(0.05f);
 	}
 	auto* pPlayer1 = char1->AddComponent<dae::PlayerComponent>(3);
 	dae::GameObject* pChar1 = char1.get();
@@ -111,6 +131,7 @@ static void load()
 	constexpr float speed = 100.f;
 	constexpr float speed2 = speed * 2.f;
 
+	// --- Player 1 input (keyboard) ---
 	input.BindKeyboardCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar1, glm::vec3{ 0,-1,0 }, speed));
 	input.BindKeyboardCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar1, glm::vec3{ 0, 1,0 }, speed));
 	input.BindKeyboardCommand(SDL_SCANCODE_A, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar1, glm::vec3{ -1,0,0 }, speed));
@@ -118,27 +139,25 @@ static void load()
 	input.BindKeyboardCommand(SDL_SCANCODE_X, dae::KeyState::Down, std::make_unique<dae::DieCommand>(pChar1));
 	input.BindKeyboardCommand(SDL_SCANCODE_Z, dae::KeyState::Down, std::make_unique<dae::GainPointsCommand>(pChar1, 100));
 
-	input.BindControllerCommand(0, dae::Controller::Button::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 0,-1,0 }, speed2));
-	input.BindControllerCommand(0, dae::Controller::Button::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 0, 1,0 }, speed2));
-	input.BindControllerCommand(0, dae::Controller::Button::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ -1,0,0 }, speed2));
+	// --- Player 2 input (controller) ---
+	input.BindControllerCommand(0, dae::Controller::Button::DPadUp,    dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 0,-1,0 }, speed2));
+	input.BindControllerCommand(0, dae::Controller::Button::DPadDown,  dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 0, 1,0 }, speed2));
+	input.BindControllerCommand(0, dae::Controller::Button::DPadLeft,  dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ -1,0,0 }, speed2));
 	input.BindControllerCommand(0, dae::Controller::Button::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(pChar2, glm::vec3{ 1,0,0 }, speed2));
-	input.BindControllerCommand(0, dae::Controller::Button::ButtonA, dae::KeyState::Down, std::make_unique<dae::DieCommand>(pChar2));
-	input.BindControllerCommand(0, dae::Controller::Button::ButtonB, dae::KeyState::Down, std::make_unique<dae::GainPointsCommand>(pChar2, 100));
+	input.BindControllerCommand(0, dae::Controller::Button::ButtonA,   dae::KeyState::Down, std::make_unique<dae::DieCommand>(pChar2));
+	input.BindControllerCommand(0, dae::Controller::Button::ButtonB,   dae::KeyState::Down, std::make_unique<dae::GainPointsCommand>(pChar2, 100));
+
+	input.BindKeyboardCommand(SDL_SCANCODE_M, dae::KeyState::Down,
+		std::make_unique<dae::PlaySoundCommand>(SND_MOVE, 0.8f));
 }
 
 int main(int, char* [])
 {
 #ifdef USE_STEAMWORKS
-	if (!SteamAPI_Init())
+	if (SteamAPI_Init())
 	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-			"Steam Error",
-			"Steam must be running to play this game.\n(SteamAPI_Init() failed)",
-			nullptr);
-		return 1;
+		dae::SteamAchievements::GetInstance().Init();
 	}
-
-	dae::SteamAchievements::GetInstance().Init();
 #endif
 
 #if __EMSCRIPTEN__
@@ -151,8 +170,27 @@ int main(int, char* [])
 
 	try
 	{
+	
+#if _DEBUG
+		dae::ServiceLocator::RegisterSoundSystem(
+			std::make_unique<dae::LoggingSoundSystem>(
+				std::make_unique<dae::SDLSoundSystem>()));
+#else
+		dae::ServiceLocator::RegisterSoundSystem(
+			std::make_unique<dae::SDLSoundSystem>());
+#endif
+
+		// Register sound files (paths relative to the Data folder)
+		auto& ss = dae::ServiceLocator::GetSoundSystem();
+		ss.RegisterSound(SND_MOVE,   (data_location / "move.wav").string());
+		ss.RegisterSound(SND_DIE,    (data_location / "die.wav").string());
+		ss.RegisterSound(SND_POINTS, (data_location / "points.wav").string());
+
 		dae::Minigin engine(data_location);
 		engine.Run(load);
+
+		dae::ServiceLocator::RegisterSoundSystem(nullptr);
+
 	}
 	catch (const std::exception& e)
 	{

@@ -3,6 +3,8 @@
 #include "Timer.h"
 #include <glm/vec3.hpp>
 #include "PlayerComponent.h"
+#include "ServiceLocator.h"
+#include "SoundSystem.h"
 
 namespace dae
 {
@@ -80,5 +82,22 @@ namespace dae
 
 	private:
 		int m_points{};
+	};
+
+	// Command that plays a sound via the ServiceLocator - no direct dependency on SDL_mixer
+	class PlaySoundCommand final : public Command
+	{
+	public:
+		PlaySoundCommand(sound_id id, float volume)
+			: m_id(id), m_volume(volume) {}
+
+		void Execute() override
+		{
+			ServiceLocator::GetSoundSystem().Play(m_id, m_volume);
+		}
+
+	private:
+		sound_id m_id{};
+		float    m_volume{ 1.f };
 	};
 }
