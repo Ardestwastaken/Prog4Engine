@@ -1,8 +1,6 @@
 #include "SDLSoundSystem.h"
-
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
-
 #include <thread>
 #include <mutex>
 #include <condition_variable>

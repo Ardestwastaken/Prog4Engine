@@ -10,7 +10,7 @@ namespace dae
 	class TextureComponent final : public Component
 	{
 	public:
-		explicit TextureComponent(GameObject* gameObject);
+		explicit TextureComponent(GameObject* gameObject, bool centred);
 		~TextureComponent() override = default;
 
 		TextureComponent(const TextureComponent&) = delete;
@@ -28,5 +28,6 @@ namespace dae
 	private:
 		std::shared_ptr<Texture2D> m_texture{};
 		float m_scale{ 1.f };
+		bool m_centred;
 	};
 }

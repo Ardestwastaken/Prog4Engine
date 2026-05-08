@@ -8,9 +8,10 @@
 namespace dae
 {
 
-	TextureComponent::TextureComponent(GameObject* gameObject)
+	TextureComponent::TextureComponent(GameObject* gameObject, bool centred)
 		: Component(gameObject)
 		, m_texture(nullptr)
+		, m_centred{centred}
 	{
 	}
 
@@ -22,10 +23,10 @@ namespace dae
 			const auto  size = m_texture->GetSize();
 
 			SDL_FRect dst{};
-			dst.x = pos.x;
-			dst.y = pos.y;
 			dst.w = size.x * m_scale;
 			dst.h = size.y * m_scale;
+			dst.x = pos.x - dst.w * 0.5f * m_centred;
+			dst.y = pos.y - dst.h * 0.5f * m_centred;
 
 			SDL_RenderTexture(Renderer::GetInstance().GetSDLRenderer(),
 				m_texture->GetSDLTexture(), nullptr, &dst);
