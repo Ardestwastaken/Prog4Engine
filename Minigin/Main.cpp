@@ -159,6 +159,7 @@ int main(int, char* [])
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Engine Error", e.what(), nullptr);
     }
 
+
 #ifdef USE_STEAMWORKS
     SteamAPI_Shutdown();
 #endif

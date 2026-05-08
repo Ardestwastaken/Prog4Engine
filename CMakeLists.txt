@@ -218,7 +218,7 @@ else()
 endif()
 
 add_executable(${GAME_TARGET} ${GAME_PARAM}
-  Minigin/main.cpp
+  Minigin/Main.cpp
   # Q*bert game-specific code (state machine player lives here, NOT in engine)
   Minigin/QbertPlayerComponent.cpp
 )
