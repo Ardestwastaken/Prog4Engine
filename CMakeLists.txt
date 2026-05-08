@@ -206,6 +206,9 @@ else()
   target_compile_options(MiniginEngine PRIVATE -Wall -Wextra -Werror)
 endif()
 
+# ============================================================
+#  GAME EXECUTABLE
+# ============================================================
 if(EMSCRIPTEN)
   set(GAME_TARGET minigin_web)
   set(GAME_PARAM)
@@ -216,13 +219,13 @@ endif()
 
 add_executable(${GAME_TARGET} ${GAME_PARAM}
   Minigin/main.cpp
+  # Q*bert game-specific code (state machine player lives here, NOT in engine)
   Minigin/QbertPlayerComponent.cpp
 )
 
 target_compile_features(${GAME_TARGET} PUBLIC cxx_std_20)
 target_include_directories(${GAME_TARGET} PRIVATE
   ${CMAKE_SOURCE_DIR}/Minigin/
-  ${CMAKE_SOURCE_DIR}/Qbert/
 )
 target_link_libraries(${GAME_TARGET} PRIVATE MiniginEngine)
 
@@ -232,6 +235,9 @@ else()
   target_compile_options(${GAME_TARGET} PRIVATE -Wall -Wextra -Werror)
 endif()
 
+# ============================================================
+# Platform-specific post-build steps
+# ============================================================
 if(EMSCRIPTEN)
   set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -g")
   set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_FREETYPE=1 -sUSE_HARFBUZZ=1 -g -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\"")
