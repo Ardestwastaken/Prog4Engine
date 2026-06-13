@@ -5,9 +5,6 @@
 namespace dae
 {
 	class Texture2D;
-	/**
-	 * Simple RAII wrapper for the SDL renderer
-	 */
 	class Renderer final : public Singleton<Renderer>
 	{
 		SDL_Renderer* m_renderer{};
@@ -18,9 +15,6 @@ namespace dae
 		void Render() const;
 		void Destroy();
 		void ShutDown();
-
-		void RenderTexture(const Texture2D& texture, float x, float y) const;
-		void RenderTexture(const Texture2D& texture, float x, float y, float width, float height) const;
 
 		SDL_Renderer* GetSDLRenderer() const;
 

@@ -10,7 +10,6 @@ namespace dae
 	{
 		for (unsigned int i = 0; i < k_MaxControllers; ++i)
 			m_pControllers[i] = std::make_unique<Controller>(i);
-
 		m_pCurrentKeyboardState = SDL_GetKeyboardState(&m_KeyCount);
 		m_PreviousKeyboardState.assign(m_pCurrentKeyboardState,
 			m_pCurrentKeyboardState + m_KeyCount);
@@ -28,41 +27,30 @@ namespace dae
 		{
 			if (e.type == SDL_EVENT_QUIT)
 				return false;
-
 			ImGui_ImplSDL3_ProcessEvent(&e);
 		}
 
 		for (auto& controller : m_pControllers)
 			controller->Update();
 
-		//KEYBOARD
 		for (auto& binding : m_KeyboardBindings)
 		{
 			const bool curDown  = m_pCurrentKeyboardState[binding.key] != 0;
 			const bool prevDown = m_PreviousKeyboardState[binding.key] != 0;
-
 			bool fire = false;
 			switch (binding.keyState)
 			{
-			case KeyState::Down:    
-				fire = curDown && !prevDown;  
-				break;
-			case KeyState::Up:      
-				fire = !curDown && prevDown; 
-				break;
-			case KeyState::Pressed: 
-				fire = curDown;               
-				break;
+			case KeyState::Down:    fire = curDown && !prevDown;  break;
+			case KeyState::Up:      fire = !curDown && prevDown;  break;
+			case KeyState::Pressed: fire = curDown;               break;
 			}
 			if (fire) binding.command->Execute();
 		}
 
-		//CONTROLLER
 		for (auto& binding : m_ControllerBindings)
 		{
 			if (binding.controllerIndex >= k_MaxControllers) continue;
 			const auto& ctrl = *m_pControllers[binding.controllerIndex];
-
 			bool fire = false;
 			switch (binding.keyState)
 			{
@@ -76,8 +64,7 @@ namespace dae
 		return true;
 	}
 
-	int InputManager::BindControllerCommand(
-		unsigned int controllerIndex,
+	int InputManager::BindControllerCommand(unsigned int controllerIndex,
 		Controller::Button button, KeyState keyState,
 		std::unique_ptr<Command> command)
 	{
@@ -108,5 +95,16 @@ namespace dae
 			std::remove_if(m_KeyboardBindings.begin(), m_KeyboardBindings.end(),
 				[bindingId](const KeyboardBinding& b) { return b.id == bindingId; }),
 			m_KeyboardBindings.end());
+	}
+
+	void InputManager::UnbindAllCommands()
+	{
+		m_KeyboardBindings.clear();
+		m_ControllerBindings.clear();
+	}
+
+	void InputManager::UnbindAllKeyboardCommands()
+	{
+		m_KeyboardBindings.clear();
 	}
 }

@@ -1,17 +1,15 @@
 #include "SoundSystem.h"
 #include <iostream>
-#include <memory>
 
 namespace dae
 {
 	LoggingSoundSystem::LoggingSoundSystem(std::unique_ptr<SoundSystem> wrapped)
-		: m_wrapped(std::move(wrapped))
-	{
-	}
+		: m_wrapped(std::move(wrapped)) {}
 
 	void LoggingSoundSystem::Play(sound_id id, float volume)
 	{
-		std::cout << "[Sound] Playing sound id=" << id << " volume=" << volume << "\n";
+		if (!IsMuted())
+			std::cout << "[Sound] Playing sound id=" << id << " volume=" << volume << "\n";
 		m_wrapped->Play(id, volume);
 	}
 
@@ -19,5 +17,15 @@ namespace dae
 	{
 		std::cout << "[Sound] Registering sound id=" << id << " -> " << filePath << "\n";
 		m_wrapped->RegisterSound(id, filePath);
+	}
+
+	void LoggingSoundSystem::SetMuted(bool muted)
+	{
+		m_wrapped->SetMuted(muted);
+	}
+
+	bool LoggingSoundSystem::IsMuted() const
+	{
+		return m_wrapped->IsMuted();
 	}
 }

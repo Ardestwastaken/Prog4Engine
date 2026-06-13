@@ -3,7 +3,6 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "Texture2D.h"
-#include <SDL3/SDL.h>
 
 namespace dae
 {
@@ -13,6 +12,7 @@ namespace dae
 		, m_texture(nullptr)
 		, m_centred{centred}
 	{
+
 	}
 
 	void TextureComponent::Render() const
@@ -36,6 +36,8 @@ namespace dae
 	void TextureComponent::SetTexture(const std::string& fileName)
 	{
 		m_texture = ResourceManager::GetInstance().LoadTexture(fileName);
+		SDL_SetTextureScaleMode(m_texture->GetSDLTexture(), SDL_SCALEMODE_NEAREST);
+
 	}
 
 }

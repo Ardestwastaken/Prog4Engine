@@ -30,11 +30,6 @@ namespace dae
 
 	using EventId = unsigned int;
 
-	inline constexpr EventId EVT_PLAYER_DIED = make_sdbm_hash("PlayerDied");
-	inline constexpr EventId EVT_ENEMY_DIED = make_sdbm_hash("EnemyDied");
-	inline constexpr EventId EVT_PICKUP_FOUND = make_sdbm_hash("PickupFound");
-	inline constexpr EventId EVT_SCORE_CHANGED = make_sdbm_hash("ScoreChanged");
-
 	class IObserver
 	{
 	public:
@@ -68,7 +63,8 @@ namespace dae
 	protected:
 		void NotifyObservers(EventId eventId, int value = 0)
 		{
-			for (auto* observer : m_observers)
+			auto observers = m_observers; // copy — safe against removal during notify
+			for (auto* observer : observers)
 				observer->OnNotify(eventId, value);
 		}
 

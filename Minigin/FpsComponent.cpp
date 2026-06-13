@@ -16,7 +16,7 @@ namespace dae
 
 	void FpsComponent::Update()
 	{
-		const float deltaTime = Time::GetInstance().GetDeltaTime();
+		const float deltaTime = Time::GetDeltaTime();
 
 		m_updateTimer += deltaTime;
 		m_frameCount++;

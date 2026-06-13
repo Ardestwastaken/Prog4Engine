@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.26)
 project(Minigin)
 
 # ============================================================
-# C++20 helper
+# C++20
 # ============================================================
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -150,7 +150,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/steam")
 find_package(Steamworks QUIET)
 
 # ============================================================
-#  STATIC ENGINE LIBRARY  (MiniginEngine)
+#  ENGINE STATIC LIBRARY  (MiniginEngine)
+#  Contains only generic, reusable engine code.
+#  No game-specific files belong here.
 # ============================================================
 if(EMSCRIPTEN)
   set(CONTROLLER_SRC Minigin/ControllerSDL.cpp)
@@ -169,17 +171,16 @@ add_library(MiniginEngine STATIC
   Minigin/SceneManager.cpp
   Minigin/TextObject.cpp
   Minigin/Texture2D.cpp
-  Minigin/Transform.cpp
+  
   Minigin/TextureComponent.cpp
   Minigin/FpsComponent.cpp
-  Minigin/RotatorComponent.cpp
-  Minigin/CacheTheTrash.cpp
-  # Sound system
+  
+  
   Minigin/SoundSystem.cpp
   Minigin/SDLSoundSystem.cpp
   Minigin/ServiceLocator.cpp
   ${CONTROLLER_SRC}
-)
+ "Minigin/AnimationComponent.cpp" "Minigin/TextureAtlasComponent.cpp")
 
 target_compile_features(MiniginEngine PUBLIC cxx_std_20)
 
@@ -207,7 +208,8 @@ else()
 endif()
 
 # ============================================================
-#  GAME EXECUTABLE
+#  QBERT GAME EXECUTABLE
+#  All Q*bert-specific code lives in the Qbert/ folder.
 # ============================================================
 if(EMSCRIPTEN)
   set(GAME_TARGET minigin_web)
@@ -218,15 +220,22 @@ else()
 endif()
 
 add_executable(${GAME_TARGET} ${GAME_PARAM}
-  Minigin/Main.cpp
-  # Q*bert game-specific code (state machine player lives here, NOT in engine)
-  Minigin/QbertPlayerComponent.cpp
+  Qbert/main.cpp
+  Qbert/GridComponent.cpp
+  Qbert/PlayerComponent.cpp
+  Qbert/PlayerStates.cpp
+  Qbert/CoilyComponent.cpp
+  Qbert/CoilyStates.cpp
+  
+ 
 )
 
 target_compile_features(${GAME_TARGET} PUBLIC cxx_std_20)
+
 target_include_directories(${GAME_TARGET} PRIVATE
-  ${CMAKE_SOURCE_DIR}/Minigin/
+  ${CMAKE_SOURCE_DIR}/Qbert/
 )
+
 target_link_libraries(${GAME_TARGET} PRIVATE MiniginEngine)
 
 if(MSVC)
@@ -244,7 +253,7 @@ if(EMSCRIPTEN)
   set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/EmscriptenToolchain.cmake)
   set_target_properties(${GAME_TARGET} PROPERTIES
     COMPILE_FLAGS "${EMSCRIPTEN_COMPILE_FLAGS}"
-    LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS}"
+    LINK_FLAGS    "${EMSCRIPTEN_LINK_FLAGS}"
   )
   add_custom_command(TARGET ${GAME_TARGET} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/web" "$<TARGET_FILE_DIR:${GAME_TARGET}>/"
@@ -284,8 +293,8 @@ elseif(APPLE)
   )
   add_custom_command(TARGET ${GAME_TARGET} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_BUNDLE_DIR:${GAME_TARGET}>/Contents/Frameworks"
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3::SDL3-shared>" "$<TARGET_BUNDLE_DIR:${GAME_TARGET}>/Contents/Frameworks/"
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared>" "$<TARGET_BUNDLE_DIR:${GAME_TARGET}>/Contents/Frameworks/"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3::SDL3-shared>"     "$<TARGET_BUNDLE_DIR:${GAME_TARGET}>/Contents/Frameworks/"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3_ttf::SDL3_ttf-shared>"  "$<TARGET_BUNDLE_DIR:${GAME_TARGET}>/Contents/Frameworks/"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3_mixer::SDL3_mixer-shared>" "$<TARGET_BUNDLE_DIR:${GAME_TARGET}>/Contents/Frameworks/"
   )
   add_custom_command(TARGET ${GAME_TARGET} POST_BUILD

@@ -4,9 +4,6 @@
 struct TTF_Font;
 namespace dae
 {
-	/**
-	 * Simple RAII wrapper for a TTF_Font
-	 */
 	class Font final
 	{
 	public:

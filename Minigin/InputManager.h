@@ -24,18 +24,17 @@ namespace dae
 
 		bool ProcessInput();
 
-		//CONTROLLER
-		int BindControllerCommand(unsigned int controllerIndex,
+		int  BindControllerCommand(unsigned int controllerIndex,
 			Controller::Button button, KeyState keyState,
 			std::unique_ptr<Command> command);
-
 		void UnbindControllerCommand(int bindingId);
 
-		//KEYBOARD
-		int BindKeyboardCommand(SDL_Scancode key, KeyState keyState,
+		int  BindKeyboardCommand(SDL_Scancode key, KeyState keyState,
 			std::unique_ptr<Command> command);
-
 		void UnbindKeyboardCommand(int bindingId);
+
+		void UnbindAllCommands();
+		void UnbindAllKeyboardCommands();
 
 	private:
 		struct ControllerBinding

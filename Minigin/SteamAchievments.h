@@ -5,8 +5,16 @@
 #include <steam_api.h>
 #pragma warning(pop)
 
+#include "Observer.h"
+#include "Singleton.h"
+
 namespace dae
 {
+	// Event fired by the game when a condition for an achievement is met.
+	// The game should fire these in response to in-game events (e.g. killing
+	// an enemy, completing a level), NOT by checking a raw score value.
+	inline constexpr EventId EVT_ACHIEVEMENT_TRIGGER = make_sdbm_hash("AchievementTrigger");
+
 	enum class AchievementId
 	{
 		WIN_ONE_GAME,
@@ -15,28 +23,20 @@ namespace dae
 	struct AchievementDef
 	{
 		AchievementId id;
-		const char* apiName;
+		const char*   apiName;
 		bool          achieved{ false };
 	};
 
-	class SteamAchievements final
+	// SteamAchievements observes game events and unlocks Steam achievements.
+	// Once an achievement is unlocked, it removes itself as an observer so it
+	// no longer receives events for that achievement.
+	class SteamAchievements final : public Singleton<SteamAchievements>, public IObserver
 	{
 	public:
-		static SteamAchievements& GetInstance()
-		{
-			static SteamAchievements instance;
-			return instance;
-		}
-
 		bool Init()
 		{
 			m_statsValid = SteamUserStats() != nullptr;
 			return m_statsValid;
-		}
-
-		void Shutdown()
-		{
-			SteamAPI_Shutdown();
 		}
 
 		void Update()
@@ -44,10 +44,12 @@ namespace dae
 			SteamAPI_RunCallbacks();
 		}
 
-		void CheckScore(int score)
+		// IObserver: called when a Subject fires an event.
+		// value = AchievementId cast to int.
+		void OnNotify(EventId eventId, int value) override
 		{
-			if (score >= 500)
-				UnlockAchievement(AchievementId::WIN_ONE_GAME);
+			if (eventId == EVT_ACHIEVEMENT_TRIGGER)
+				UnlockAchievement(static_cast<AchievementId>(value));
 		}
 
 		void UnlockAchievement(AchievementId id)
@@ -60,11 +62,15 @@ namespace dae
 					ach.achieved = true;
 					SteamUserStats()->SetAchievement(ach.apiName);
 					SteamUserStats()->StoreStats();
+					// Achievement is now permanently unlocked; no need to listen anymore.
+					// The game should call subject.RemoveObserver(this) after this point.
 				}
 			}
 		}
 
 	private:
+		friend class Singleton<SteamAchievements>;
+
 		void OnUserStatsReceived(UserStatsReceived_t* pCallback)
 		{
 			if (pCallback->m_nGameID == 480 && pCallback->m_eResult == k_EResultOK)

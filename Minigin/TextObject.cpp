@@ -12,9 +12,11 @@ namespace dae
 	TextObject::TextObject(GameObject* gameObject,
 		const std::string& text,
 		std::shared_ptr<Font> font,
+		bool centred,
 		const SDL_Color& color)
 		: Component(gameObject)
 		, m_needsUpdate(true)
+		, m_IsCentred{ centred }
 		, m_text(text)
 		, m_color(color)
 		, m_font(std::move(font))
@@ -50,7 +52,17 @@ namespace dae
 		if (m_textTexture)
 		{
 			const auto& pos = GetGameObject()->GetWorldPosition();
-			Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
+			//width set later
+			SDL_FRect dst{ pos.x, pos.y, 0, 0 };
+			//width
+			SDL_GetTextureSize(m_textTexture->GetSDLTexture(), &dst.w, &dst.h);
+			//rendertime
+			if (m_IsCentred) {
+				dst.x -= dst.w / 2.f;
+				dst.y -= dst.h / 2.f;
+
+			}
+			SDL_RenderTexture(Renderer::GetInstance().GetSDLRenderer(), m_textTexture->GetSDLTexture(), nullptr, &dst);
 		}
 	}
 

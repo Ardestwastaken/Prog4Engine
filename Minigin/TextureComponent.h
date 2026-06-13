@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include "Component.h"
+#include <SDL3/SDL.h>
 
 namespace dae
 {

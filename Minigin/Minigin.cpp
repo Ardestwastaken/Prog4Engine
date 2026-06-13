@@ -1,9 +1,12 @@
-﻿#include <stdexcept>
+#include <stdexcept>
 #include <sstream>
 #include <iostream>
 #if WIN32
 #define WIN32_LEAN_AND_MEAN 
 #include <windows.h>
+#ifdef min
+#undef min
+#endif
 #endif
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -56,7 +59,7 @@ static void PrintSDLVersion()
 	LogSDLVersion("Linked with SDL_ttf ", SDL_VERSIONNUM_MAJOR(version), SDL_VERSIONNUM_MINOR(version), SDL_VERSIONNUM_MICRO(version));
 }
 
-dae::Minigin::Minigin(const std::filesystem::path& dataPath)
+dae::Minigin::Minigin(const std::filesystem::path& dataPath, const glm::ivec2& dimensions)
 {
 	PrintSDLVersion();
 
@@ -68,8 +71,8 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 	g_window = SDL_CreateWindow(
 		"Programming 4 assignment",
-		1024,
-		576,
+		dimensions.x,
+		dimensions.y,
 		SDL_WINDOW_OPENGL
 	);
 	if (g_window == nullptr)
@@ -93,7 +96,6 @@ void dae::Minigin::Run(const std::function<void()>& load)
 {
 	load();
 
-	m_lastTime = high_resolution_clock::now();
 	m_lag = 0.f;
 
 #ifndef __EMSCRIPTEN__
@@ -108,31 +110,29 @@ void dae::Minigin::RunOneFrame()
 {
 	constexpr int msPerFrame{ 16 };
 	constexpr float fixedTimeStep{ dae::Time::FixedTimeStep };
+	constexpr float maxDeltaTime{ 0.1f };
 
-	const auto currentTime = high_resolution_clock::now();
-	const float deltaTime = duration<float>(currentTime - m_lastTime).count();
-	m_lastTime = currentTime;
+	Time::CalculateDeltaTime();
 
-	Time::GetInstance().SetDeltaTime(deltaTime);
+	m_lag += std::min(Time::GetDeltaTime(), maxDeltaTime);
 
-	m_lag += deltaTime;
-
-	m_quit = !InputManager::GetInstance().ProcessInput();
+	bool quit = !InputManager::GetInstance().ProcessInput();
+	if (quit) m_quit = true;
 
 	while (m_lag >= fixedTimeStep)
 	{
-		SceneManager::GetInstance().Update();
+		SceneManager::GetInstance().FixedUpdate();
 		m_lag -= fixedTimeStep;
 	}
 
 	SceneManager::GetInstance().Update();
-
 	Renderer::GetInstance().Render();
 
 #ifdef USE_STEAMWORKS
 	SteamAPI_RunCallbacks();
 #endif
 
-	const auto sleepTime = currentTime + milliseconds(msPerFrame) - high_resolution_clock::now();
+	// Sleep for the remainder of the frame budget
+	const auto sleepTime = Time::GetFrameStart() + milliseconds(msPerFrame) - high_resolution_clock::now();
 	std::this_thread::sleep_for(sleepTime);
 }

@@ -7,6 +7,12 @@ namespace dae
 
 	GameObject::~GameObject() = default;
 
+	void GameObject::FixedUpdate()
+	{
+		for (auto& pComp : m_pComponents)
+			pComp->FixedUpdate();
+	}
+
 	void GameObject::Update()
 	{
 		for (auto& pComp : m_pComponents)

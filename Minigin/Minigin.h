@@ -2,17 +2,20 @@
 #include <string>
 #include <functional>
 #include <filesystem>
+#include "glm/vec2.hpp"
 
 namespace dae
 {
 	class Minigin final
 	{
-		bool m_quit{};
+		static inline bool m_quit{};
 	public:
-		explicit Minigin(const std::filesystem::path& dataPath);
+		explicit Minigin(const std::filesystem::path& dataPath, const glm::ivec2& dimensions);
 		~Minigin();
 		void Run(const std::function<void()>& load);
 		void RunOneFrame();
+
+		static void RequestQuit() { m_quit = true; }
 
 		Minigin(const Minigin& other) = delete;
 		Minigin(Minigin&& other) = delete;
@@ -20,7 +23,7 @@ namespace dae
 		Minigin& operator=(Minigin&& other) = delete;
 
 	private:
-		std::chrono::high_resolution_clock::time_point m_lastTime{};
 		float m_lag{ 0.f };
+
 	};
 }

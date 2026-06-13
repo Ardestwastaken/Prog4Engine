@@ -16,6 +16,7 @@ namespace dae
 		TextObject(GameObject* gameObject,
 			const std::string& text,
 			std::shared_ptr<Font> font,
+			bool centred = true,
 			const SDL_Color& color = { 255, 255, 255, 255 });
 
 		~TextObject() override = default;
@@ -33,6 +34,7 @@ namespace dae
 
 	private:
 		bool                       m_needsUpdate{ true };
+		bool					   m_IsCentred{};
 		std::string                m_text{};
 		SDL_Color                  m_color{ 255, 255, 255, 255 };
 		std::shared_ptr<Font>      m_font{};
