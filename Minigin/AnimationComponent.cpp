@@ -10,13 +10,13 @@ namespace dae {
 	AnimationComponent::AnimationComponent(GameObject* gameObject, const std::string& texturePath, int frameCount, int fps)
 		: Component(gameObject)
 		, m_frameCount{ frameCount }
+		, m_currentFrame{ 0 }
 		, m_frameTime{ 1.f / static_cast<float>(fps) }
 		, m_TimeSinceLastFrame{ 0.f }
-		, m_currentFrame{ 0 }
-		, m_frameDestRect{ }
-		, m_isPlaying{ true }
 		, m_frameWidth{ 0.f } //calculated under
+		, m_isPlaying{ true }
 		, m_frameSourceRect{ } //calculated under
+		, m_frameDestRect{ }
 		, m_texture{} //calculated under
 	{
 		m_texture = ResourceManager::GetInstance().LoadTexture(texturePath);

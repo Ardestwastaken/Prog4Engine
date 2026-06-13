@@ -16,6 +16,7 @@ find_package(glm CONFIG QUIET)
 if(NOT glm_FOUND)
   FetchContent_Declare(
     glm
+    TLS_VERIFY OFF
     URL https://github.com/g-truc/glm/releases/download/1.0.3/glm-1.0.3.zip
     DOWNLOAD_NO_PROGRESS ON
     DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads

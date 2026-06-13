@@ -59,7 +59,6 @@ namespace dae
 		void UpdateArrow()
 		{
 			if (!m_arrow || m_itemPositions.empty()) return;
-			// Arrow sits at a fixed x on the left, same y as the selected item
 			m_arrow->SetLocalPosition(k_ArrowScreenX, m_itemPositions[m_selectedIndex].y);
 		}
 

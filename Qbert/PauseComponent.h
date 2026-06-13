@@ -27,9 +27,6 @@ namespace dae
 		int m_menuScene;
 	};
 
-	// Toggles pause state and swaps only the Escape binding.
-	// Movement/jump bindings are left in place — they fire but have no effect
-	// because SceneManager::Update is skipped while paused.
 	class TogglePauseCommand final : public Command
 	{
 	public:
@@ -107,8 +104,6 @@ namespace dae
 		int m_ctrlYBindId{ -1 };
 	};
 
-	// Renders Pause_Screen.png stretched over the full window at 50% opacity
-	// whenever the scene manager is paused.
 	class PauseOverlayComponent final : public Component
 	{
 	public:
