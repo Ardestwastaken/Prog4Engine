@@ -47,7 +47,10 @@ namespace dae
 				std::cerr << "[SDLSoundSystem] MIX_CreateMixerDevice failed: " << SDL_GetError() << "\n";
 				return;
 			}
+#ifndef __EMSCRIPTEN__
+			// The web build has no threads; there sounds are played directly in EnqueuePlay
 			m_audioThread = std::thread(&Impl::AudioThreadFunc, this);
+#endif
 		}
 
 		~Impl()
@@ -66,6 +69,10 @@ namespace dae
 		void EnqueuePlay(sound_id id, float volume)
 		{
 			if (m_muted) return;
+#ifdef __EMSCRIPTEN__
+			ProcessEvent({ id, volume });
+			return;
+#endif
 			{
 				std::lock_guard<std::mutex> lock(m_queueMutex);
 				m_queue.push({ id, volume });

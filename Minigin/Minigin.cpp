@@ -108,7 +108,6 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
-	constexpr int msPerFrame{ 16 };
 	constexpr float fixedTimeStep{ dae::Time::FixedTimeStep };
 	constexpr float maxDeltaTime{ 0.1f };
 
@@ -133,6 +132,10 @@ void dae::Minigin::RunOneFrame()
 #endif
 
 	// Sleep for the remainder of the frame budget
+	// (not on the web: the browser paces frames itself, and sleeping there busy-waits)
+#ifndef __EMSCRIPTEN__
+	constexpr int msPerFrame{ 16 };
 	const auto sleepTime = Time::GetFrameStart() + milliseconds(msPerFrame) - high_resolution_clock::now();
 	std::this_thread::sleep_for(sleepTime);
+#endif
 }

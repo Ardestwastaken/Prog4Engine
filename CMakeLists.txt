@@ -249,8 +249,14 @@ endif()
 # Platform-specific post-build steps
 # ============================================================
 if(EMSCRIPTEN)
-  set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -g")
-  set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_FREETYPE=1 -sUSE_HARFBUZZ=1 -g -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\"")
+  # Debug info only in Debug builds: with -g the Release .wasm is ~20 MB instead of a few MB
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(EMSCRIPTEN_DEBUG_FLAG "-g")
+  else()
+    set(EMSCRIPTEN_DEBUG_FLAG "")
+  endif()
+  set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} ${EMSCRIPTEN_DEBUG_FLAG}")
+  set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_FREETYPE=1 -sUSE_HARFBUZZ=1 ${EMSCRIPTEN_DEBUG_FLAG} -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\"")
   set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/EmscriptenToolchain.cmake)
   set_target_properties(${GAME_TARGET} PROPERTIES
     COMPILE_FLAGS "${EMSCRIPTEN_COMPILE_FLAGS}"

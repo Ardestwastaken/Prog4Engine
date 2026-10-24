@@ -19,9 +19,6 @@ namespace dae
 
 	bool InputManager::ProcessInput()
 	{
-		m_PreviousKeyboardState.assign(m_pCurrentKeyboardState,
-			m_pCurrentKeyboardState + m_KeyCount);
-
 		SDL_Event e;
 		while (SDL_PollEvent(&e))
 		{
@@ -60,6 +57,12 @@ namespace dae
 			}
 			if (fire) binding.command->Execute();
 		}
+
+		// Remember this frame's keys for next frame's Down/Up checks. This is done here, not
+		// before polling, because in the browser key events arrive between frames and SDL has
+		// already updated the state by the time ProcessInput starts.
+		m_PreviousKeyboardState.assign(m_pCurrentKeyboardState,
+			m_pCurrentKeyboardState + m_KeyCount);
 
 		return true;
 	}

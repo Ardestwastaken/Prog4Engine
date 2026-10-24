@@ -2,12 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Minigin Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Q*bert</title>
     <style>
         html, body {
             margin: 0;
             width: 100%;
             height: 100%;
+            background: #000;
+            overflow: hidden;
         }
 
         body {
@@ -18,15 +21,18 @@
 
         canvas {
             display: block;
+            outline: none;
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" tabindex="-1"></canvas>
     <script>
         var Module = {
             canvas: document.getElementById('canvas')
         };
+        // Clicking the game (also when it's embedded in an iframe) gives it keyboard focus
+        document.addEventListener('pointerdown', () => window.focus());
     </script>
     <script src="minigin_web.js"></script>
 </body>

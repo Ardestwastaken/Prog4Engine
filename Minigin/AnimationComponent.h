@@ -45,4 +45,12 @@ namespace dae {
 		std::shared_ptr<Texture2D> m_texture;
 	};
 
+
+#ifdef _DEBUG
+	class Test {
+
+	};
+#endif
+
 }
+
